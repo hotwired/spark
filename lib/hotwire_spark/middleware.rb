@@ -9,7 +9,6 @@ class HotwireSpark::Middleware
     if html_response?(headers)
       html = html_from(response)
       html = inject_javascript(html)
-      html = inject_turbo_stream(html)
       headers["Content-Length"] = html.bytesize.to_s if html
       response = [ html ]
     end
@@ -32,10 +31,5 @@ class HotwireSpark::Middleware
       script_path = ActionController::Base.helpers.asset_path("hotwire_spark.js")
       script_tag = ActionController::Base.helpers.javascript_include_tag(script_path)
       html.sub("</head>", "#{script_tag}</head>")
-    end
-
-    def inject_turbo_stream(html)
-      turbo_stream_tag = ActionController::Base.helpers.turbo_stream_from "hotwire_spark", channel: HotwireSpark::ActionCable::StreamsChannel
-      html.sub("</body>", "#{turbo_stream_tag}</body>")
     end
 end

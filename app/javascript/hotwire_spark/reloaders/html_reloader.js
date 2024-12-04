@@ -30,13 +30,6 @@ export class HtmlReloader {
   }
 
   #updateBody(newBody) {
-    Idiomorph.morph(document.body, newBody, {
-      callbacks: {
-        beforeNodeMorphed: function (oldNode, newNode) {
-          const value = !(oldNode instanceof HTMLElement) || !oldNode.closest("turbo-cable-stream-source")
-          return value
-        }
-      }
-    })
+    Idiomorph.morph(document.body, newBody)
   }
 }

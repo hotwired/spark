@@ -1,13 +1,14 @@
 import { Application } from "@hotwired/stimulus"
 import { log } from "../logger.js"
-import { cacheBustedUrl } from "../helpers.js"
+import { cacheBustedUrl, reloadHtmlDocument } from "../helpers.js"
 
 export class StimulusReloader {
-  static async reload(...params) {
-    return new StimulusReloader(...params).reload()
+  static async reload(filePattern) {
+    const document = await reloadHtmlDocument()
+    return new StimulusReloader(document, filePattern).reload()
   }
 
-  constructor(document = window.document, filePattern = /./) {
+  constructor(document, filePattern = /./) {
     this.document = document
     this.filePattern = filePattern
     this.application = window.Stimulus || Application.start()

@@ -1,4 +1,3 @@
-import "./stream_actions"
 import { HotwireSpark } from "./index.js"
 
 export function log(...args) {

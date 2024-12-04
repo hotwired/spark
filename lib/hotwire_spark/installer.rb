@@ -17,9 +17,7 @@ class HotwireSpark::Installer
     delegate :middleware, to: :application
 
     def configure_middleware
-      ::ActionCable::Server::Base.prepend(HotwireSpark::ActionCable::PersistentCableServer)
-
-      middleware.insert_before ActionDispatch::Executor, HotwireSpark::ActionCable::PersistentCableMiddleware
+      middleware.unshift HotwireSpark::Server
       middleware.use HotwireSpark::Middleware
     end
 
@@ -33,17 +31,15 @@ class HotwireSpark::Installer
 
     def monitor(paths_name, action:)
       file_watcher.monitor HotwireSpark.public_send(paths_name) do |file_path|
-        ActionCable.server.broadcast "hotwire_spark", stream_action_for(action, file_path)
+        HotwireSpark::Websockets.broadcast(change_message_for(action, file_path))
       end
+    end
+
+    def change_message_for(action, file_path)
+      { action: action, path: file_path }.to_json
     end
 
     def file_watcher
       @file_watches ||= HotwireSpark::FileWatcher.new
-    end
-
-    def stream_action_for(action, file_path)
-      <<~HTML
-        <turbo-stream action="#{action}" file_path="#{file_path}">
-      HTML
     end
 end

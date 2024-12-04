@@ -26,6 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "zeitwerk"
   spec.add_dependency "listen"
   spec.add_dependency "turbo-rails"
+  spec.add_dependency "faye-websocket"
 
   spec.add_development_dependency "rubocop"
   spec.add_development_dependency "rubocop-rails-omakase"
