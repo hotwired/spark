@@ -13,23 +13,3 @@ if ActiveSupport::TestCase.respond_to?(:fixture_paths=)
   ActiveSupport::TestCase.file_fixture_path = File.expand_path("fixtures", __dir__) + "/files"
   ActiveSupport::TestCase.fixtures :all
 end
-
-require "helpers/files_helper"
-
-class ActiveSupport::TestCase
-  include FilesHelper
-
-  setup do
-    reload_rails_reloader
-    ActionCable.server.suppress_restarts = true
-  end
-
-  teardown do
-    ActionCable.server.suppress_restarts = false
-  end
-
-  private
-    def reload_rails_reloader
-      Rails.application.reloader.reload!
-    end
-end

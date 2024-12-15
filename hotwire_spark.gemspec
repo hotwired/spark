@@ -6,8 +6,8 @@ Gem::Specification.new do |spec|
   spec.authors     = [ "Jorge Manrubia" ]
   spec.email       = [ "jorge@37signals.com" ]
   spec.homepage    = "https://github.com/basecamp/hotwire_spark"
-  spec.summary     = "Smooth live reloading for your Rails apps"
-  spec.description = "A live reloading system that updates just what's needed to offer a smooth experience."
+  spec.summary     = "🤫"
+  spec.description = "🤫"
   spec.license     = "MIT"
 
   spec.metadata["homepage_uri"] = spec.homepage
@@ -19,11 +19,4 @@ Gem::Specification.new do |spec|
   end
 
   spec.add_dependency "rails", ">= 8.0.0"
-  spec.add_dependency "zeitwerk"
-  spec.add_dependency "listen"
-
-  spec.add_development_dependency "rubocop"
-  spec.add_development_dependency "rubocop-rails-omakase"
-  spec.add_development_dependency "capybara"
-  spec.add_development_dependency "cuprite"
 end
