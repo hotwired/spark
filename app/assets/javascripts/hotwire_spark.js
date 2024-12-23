@@ -1396,71 +1396,65 @@ var HotwireSpark = (function () {
   }
 
   class StimulusReloader {
-    static async reload(filePattern) {
-      const document = await reloadHtmlDocument();
-      return new StimulusReloader(document, filePattern).reload();
+    static async reload(path) {
+      return new StimulusReloader(path).reload();
     }
-    constructor(document) {
-      let filePattern = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : /./;
-      this.document = document;
-      this.filePattern = filePattern;
+    static async reloadAll() {
+      Stimulus.controllers.forEach(controller => {
+        Stimulus.unload(controller.identifier);
+        Stimulus.register(controller.identifier, controller.constructor);
+      });
+      return Promise.resolve();
+    }
+    constructor(changedPath) {
+      this.changedPath = changedPath;
       this.application = window.Stimulus;
     }
     async reload() {
       log("Reload Stimulus controllers...");
       this.application.stop();
-      await this.#reloadChangedStimulusControllers();
-      this.#unloadDeletedStimulusControllers();
+      try {
+        await this.#reloadChangedController();
+      } catch (error) {
+        if (error instanceof SourceFileNotFound) {
+          this.#deregisterChangedController();
+        } else {
+          console.error("Error reloading controller", error);
+        }
+      }
       this.application.start();
     }
-    async #reloadChangedStimulusControllers() {
-      await Promise.all(this.#stimulusControllerPathsToReload.map(async moduleName => this.#reloadStimulusController(moduleName)));
+    async #reloadChangedController() {
+      const module = await this.#importControllerFromSource(this.changedPath);
+      await this.#registerController(this.#changedControllerIdentifier, module);
     }
-    get #stimulusControllerPathsToReload() {
-      this.controllerPathsToReload = this.controllerPathsToReload || this.#stimulusControllerPaths.filter(path => this.#shouldReloadController(path));
-      return this.controllerPathsToReload;
-    }
-    get #stimulusControllerPaths() {
-      return Object.keys(this.#stimulusPathsByModule).filter(path => path.endsWith("_controller"));
-    }
-    #shouldReloadController(path) {
-      return this.filePattern.test(path);
-    }
-    get #stimulusPathsByModule() {
-      this.pathsByModule = this.pathsByModule || this.#parseImportmapJson();
-      return this.pathsByModule;
-    }
-    #parseImportmapJson() {
-      const importmapScript = this.document.querySelector("script[type=importmap]");
-      return JSON.parse(importmapScript.text).imports;
-    }
-    async #reloadStimulusController(moduleName) {
-      log(`\t${moduleName}`);
-      const controllerName = this.#extractControllerName(moduleName);
-      const path = cacheBustedUrl(this.#pathForModuleName(moduleName));
-      const module = await import(path);
-      this.#registerController(controllerName, module);
-    }
-    #unloadDeletedStimulusControllers() {
-      this.#controllersToUnload.forEach(controller => this.#deregisterController(controller.identifier));
-    }
-    get #controllersToUnload() {
-      if (this.#didChangeTriggerAReload) {
-        return [];
-      } else {
-        return this.application.controllers.filter(controller => this.filePattern.test(`${controller.identifier}_controller`));
+    async #importControllerFromSource(path) {
+      const response = await fetch(`/spark/source_files/?path=${path}`);
+      if (response.status === 404) {
+        console.debug("EN SERIO", response.status, "path", path);
+        throw new SourceFileNotFound(`Source file not found: ${path}`);
       }
+      const sourceCode = await response.text();
+      const blob = new Blob([sourceCode], {
+        type: "application/javascript"
+      });
+      const moduleUrl = URL.createObjectURL(blob);
+      const module = await import(moduleUrl);
+      URL.revokeObjectURL(moduleUrl);
+      return module;
     }
-    get #didChangeTriggerAReload() {
-      return this.#stimulusControllerPathsToReload.length > 0;
-    }
-    #pathForModuleName(moduleName) {
-      return this.#stimulusPathsByModule[moduleName];
+    get #changedControllerIdentifier() {
+      this.changedControllerIdentifier = this.changedControllerIdentifier || this.#extractControllerName(this.changedPath);
+      return this.changedControllerIdentifier;
     }
     #extractControllerName(path) {
-      return path.replace(/^.*\//, "").replace("_controller", "").replace(/\//g, "--").replace(/_/g, "-");
+      return path.replace(/^.*\//, "").replace("_controller", "").replace(/\//g, "--").replace(/_/g, "-").replace(/\.js$/, "");
+    }
+    #deregisterChangedController() {
+      this.#deregisterController(this.#changedControllerIdentifier);
     }
     #registerController(name, module) {
+      log("\tReloading controller", name);
       this.application.unload(name);
       this.application.register(name, module.default);
     }
@@ -1469,14 +1463,15 @@ var HotwireSpark = (function () {
       this.application.unload(name);
     }
   }
+  class SourceFileNotFound extends Error {}
 
   class HtmlReloader {
     static async reload() {
       return new HtmlReloader().reload();
     }
     async reload() {
-      const reloadedDocument = await this.#reloadHtml();
-      await this.#reloadStimulus(reloadedDocument);
+      await this.#reloadHtml();
+      await this.#reloadStimulus();
     }
     async #reloadHtml() {
       log("Reload html...");
@@ -1487,8 +1482,8 @@ var HotwireSpark = (function () {
     #updateBody(newBody) {
       Idiomorph.morph(document.body, newBody);
     }
-    async #reloadStimulus(reloadedDocument) {
-      return new StimulusReloader(reloadedDocument).reload();
+    async #reloadStimulus() {
+      await StimulusReloader.reloadAll();
     }
   }
 
@@ -1566,14 +1561,13 @@ var HotwireSpark = (function () {
         action,
         path
       } = _ref;
-      const fileName = assetNameFromPath(path);
       switch (action) {
         case "reload_html":
           return this.reloadHtml();
         case "reload_css":
-          return this.reloadCss(fileName);
+          return this.reloadCss(path);
         case "reload_stimulus":
-          return this.reloadStimulus(fileName);
+          return this.reloadStimulus(path);
         default:
           throw new Error(`Unknown action: ${action}`);
       }
@@ -1581,11 +1575,12 @@ var HotwireSpark = (function () {
     reloadHtml() {
       return HtmlReloader.reload();
     },
-    reloadCss(fileName) {
+    reloadCss(path) {
+      const fileName = assetNameFromPath(path);
       return CssReloader.reload(new RegExp(fileName));
     },
-    reloadStimulus(fileName) {
-      return StimulusReloader.reload(new RegExp(fileName));
+    reloadStimulus(path) {
+      return StimulusReloader.reload(path);
     }
   });
 

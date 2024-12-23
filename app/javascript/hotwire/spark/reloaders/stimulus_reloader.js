@@ -1,15 +1,21 @@
 import { log } from "../logger.js"
-import { cacheBustedUrl, reloadHtmlDocument } from "../helpers.js"
 
 export class StimulusReloader {
-  static async reload(filePattern) {
-    const document = await reloadHtmlDocument()
-    return new StimulusReloader(document, filePattern).reload()
+  static async reload(path) {
+    return new StimulusReloader(path).reload()
   }
 
-  constructor(document, filePattern = /./) {
-    this.document = document
-    this.filePattern = filePattern
+  static async reloadAll() {
+    Stimulus.controllers.forEach(controller => {
+      Stimulus.unload(controller.identifier)
+      Stimulus.register(controller.identifier, controller.constructor)
+    })
+
+    return Promise.resolve()
+  }
+
+  constructor(changedPath) {
+    this.changedPath = changedPath
     this.application = window.Stimulus
   }
 
@@ -18,70 +24,45 @@ export class StimulusReloader {
 
     this.application.stop()
 
-    await this.#reloadChangedStimulusControllers()
-    this.#unloadDeletedStimulusControllers()
+    try {
+      await this.#reloadChangedController()
+    }
+    catch(error) {
+      if (error instanceof SourceFileNotFound) {
+        this.#deregisterChangedController()
+      } else {
+        console.error("Error reloading controller", error)
+      }
+    }
 
     this.application.start()
   }
 
-  async #reloadChangedStimulusControllers() {
-    await Promise.all(
-      this.#stimulusControllerPathsToReload.map(async moduleName => this.#reloadStimulusController(moduleName))
-    )
+  async #reloadChangedController() {
+    const module = await this.#importControllerFromSource(this.changedPath)
+    await this.#registerController(this.#changedControllerIdentifier, module)
   }
 
-  get #stimulusControllerPathsToReload() {
-    this.controllerPathsToReload = this.controllerPathsToReload || this.#stimulusControllerPaths.filter(path => this.#shouldReloadController(path))
-    return this.controllerPathsToReload
-  }
+  async #importControllerFromSource(path) {
+    const response = await fetch(`/spark/source_files/?path=${path}`)
 
-  get #stimulusControllerPaths() {
-    return Object.keys(this.#stimulusPathsByModule).filter(path => path.endsWith("_controller"))
-  }
-
-  #shouldReloadController(path) {
-    return this.filePattern.test(path)
-  }
-
-  get #stimulusPathsByModule() {
-    this.pathsByModule = this.pathsByModule || this.#parseImportmapJson()
-    return this.pathsByModule
-  }
-
-  #parseImportmapJson() {
-    const importmapScript = this.document.querySelector("script[type=importmap]")
-    return JSON.parse(importmapScript.text).imports
-  }
-
-  async #reloadStimulusController(moduleName) {
-    log(`\t${moduleName}`)
-
-    const controllerName = this.#extractControllerName(moduleName)
-    const path = cacheBustedUrl(this.#pathForModuleName(moduleName))
-
-    const module = await import(path)
-
-    this.#registerController(controllerName, module)
-  }
-
-  #unloadDeletedStimulusControllers() {
-    this.#controllersToUnload.forEach(controller => this.#deregisterController(controller.identifier))
-  }
-
-  get #controllersToUnload() {
-    if (this.#didChangeTriggerAReload) {
-      return []
-    } else {
-      return this.application.controllers.filter(controller => this.filePattern.test(`${controller.identifier}_controller`))
+    if (response.status === 404) {
+      throw new SourceFileNotFound(`Source file not found: ${path}`)
     }
+
+    const sourceCode = await response.text()
+
+    const blob = new Blob([sourceCode], { type: "application/javascript" })
+    const moduleUrl = URL.createObjectURL(blob)
+    const module = await import(moduleUrl)
+    URL.revokeObjectURL(moduleUrl)
+
+    return module
   }
 
-  get #didChangeTriggerAReload() {
-    return this.#stimulusControllerPathsToReload.length > 0
-  }
-
-  #pathForModuleName(moduleName) {
-    return this.#stimulusPathsByModule[moduleName]
+  get #changedControllerIdentifier() {
+    this.changedControllerIdentifier = this.changedControllerIdentifier || this.#extractControllerName(this.changedPath)
+    return this.changedControllerIdentifier
   }
 
   #extractControllerName(path) {
@@ -90,9 +71,16 @@ export class StimulusReloader {
       .replace("_controller", "")
       .replace(/\//g, "--")
       .replace(/_/g, "-")
+      .replace(/\.js$/, "")
+  }
+
+  #deregisterChangedController() {
+    this.#deregisterController(this.#changedControllerIdentifier)
   }
 
   #registerController(name, module) {
+    log("\tReloading controller", name)
+
     this.application.unload(name)
     this.application.register(name, module.default)
   }
@@ -102,3 +90,5 @@ export class StimulusReloader {
     this.application.unload(name)
   }
 }
+
+class SourceFileNotFound extends Error { }

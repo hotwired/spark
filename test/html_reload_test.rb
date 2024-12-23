@@ -5,7 +5,7 @@ class HtmlReloadTest < ApplicationSystemTestCase
     visit root_path
     assert_no_text "This was replaced"
 
-    edit_file "app/views/home/show.html.erb", replace: "_REPLACE_", with: "This was replaced!"
+    edit_file "app/views/home/show.html.erb", replace: "_REPLACE_HTML_", with: "This was replaced!"
 
     assert_text "This was replaced"
   end
