@@ -39,13 +39,14 @@ You can set configuration options on your `development.rb`. For example:
 config.hotwire.spark.html_paths += %w[ lib ]
 ```
 
-| Name             | Description                                                                                                                  |
-|------------------|------------------------------------------------------------------------------------------------------------------------------|
-| `html_paths`     | Paths where file changes trigger a content refresh. By default: `app/controllers`, `app/helpers`, `app/models`, `app/views`. |
-| `css_paths`      | Paths where file changes trigger a CSS refresh. By default: `app/assets/stylesheets` or `app/assets/builds` if exists.       |
-| `stimulus_paths` | Paths where file changes trigger a Stimulus controller refresh. By default: `app/javascript/controllers`.                    |
-| `enabled`        | Enable or disable live reloading. By default, it's only enabled in `development`.                                            |
-| `logging`        | Show logs in the browser console when reloading happens. It's false by default.                                              |
+| Name                 | Description                                                                                                                                                     |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `html_paths`         | Paths where file changes trigger a content refresh. By default: `app/controllers`, `app/helpers`, `app/models`, `app/views`.                                    |
+| `css_paths`          | Paths where file changes trigger a CSS refresh. By default: `app/assets/stylesheets` or `app/assets/builds` if exists.                                          |
+| `stimulus_paths`     | Paths where file changes trigger a Stimulus controller refresh. By default: `app/javascript/controllers`.                                                       |
+| `enabled`            | Enable or disable live reloading. By default, it's only enabled in `development`.                                                                               |
+| `logging`            | Show logs in the browser console when reloading happens. It's false by default.                                                                                 |
+| `html_reload_method` | Reload html by morphing (`"morph"`) or with a Turbo page reload (`"replace"`). By default `"morph"`. Use `"replace"` if your app is incompatible with morphing. |
 
 ## License
 

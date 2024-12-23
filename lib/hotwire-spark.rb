@@ -12,6 +12,7 @@ module Hotwire::Spark
   mattr_accessor :html_paths, default: []
   mattr_accessor :stimulus_paths, default: []
   mattr_accessor :logging, default: false
+  mattr_accessor :html_reload_method, default: "morph"
 
   mattr_accessor :enabled, default: Rails.env.development?
 

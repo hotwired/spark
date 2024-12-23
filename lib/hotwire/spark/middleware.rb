@@ -42,14 +42,18 @@ class Hotwire::Spark::Middleware
     end
 
     def inject_options(html)
-      if Hotwire::Spark.logging
-        html.sub("</head>", "#{logging_option}</head>")
-      else
-        html
-      end
+      html.sub("</head>", "#{options}</head>")
+    end
+
+    def options
+      [ logging_option, html_reload_method_option ].compact.join("\n")
     end
 
     def logging_option
-      view_helpers.tag.meta(name: "hotwire-spark:logging", content: "true")
+      view_helpers.tag.meta(name: "hotwire-spark:logging", content: "true") if Hotwire::Spark.logging
+    end
+
+    def html_reload_method_option
+      view_helpers.tag.meta(name: "hotwire-spark:html-reload-method", content: Hotwire::Spark.html_reload_method)
     end
 end

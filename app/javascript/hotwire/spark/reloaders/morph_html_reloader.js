@@ -1,20 +1,20 @@
 import { Idiomorph } from "idiomorph/dist/idiomorph.esm.js"
-import { log } from "../logger.js"
 import { reloadHtmlDocument } from "../helpers.js"
+import { log } from "../logger.js"
 import { StimulusReloader } from "./stimulus_reloader.js"
 
-export class HtmlReloader {
+export class MorphHtmlReloader {
   static async reload() {
-    return new HtmlReloader().reload()
+    return new MorphHtmlReloader().reload()
   }
 
   async reload() {
-    const reloadedDocument = await this.#reloadHtml()
+    const reloadedDocument = await this.#reloadWithMorph()
     await this.#reloadStimulus(reloadedDocument)
   }
 
-  async #reloadHtml() {
-    log("Reload html...")
+  async #reloadWithMorph() {
+    log("Reload html with morph...")
 
     const reloadedDocument = await reloadHtmlDocument()
     this.#updateBody(reloadedDocument.body)

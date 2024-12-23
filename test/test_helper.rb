@@ -21,6 +21,7 @@ class ActiveSupport::TestCase
 
   setup do
     reload_rails_reloader
+    Hotwire::Spark.html_reload_method = "morph"
   end
 
   private

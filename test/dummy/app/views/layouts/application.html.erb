@@ -20,6 +20,16 @@
   <%# Includes all stylesheet files in app/assets/stylesheets %>
   <%= stylesheet_link_tag :app %>
   <%= javascript_importmap_tags %>
+
+  <script>
+    let firstLoad = true
+    document.addEventListener("turbo:load", (event) => {
+      if (!firstLoad) {
+        document.body.setAttribute("data-turbo-navigated", "")
+      }
+      firstLoad = false
+    })
+  </script>
 </head>
 
 <body>

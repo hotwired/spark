@@ -1,8 +1,9 @@
 import consumer from "./consumer"
 import { assetNameFromPath } from "../helpers.js";
-import { HtmlReloader } from "../reloaders/html_reloader.js";
+import { MorphHtmlReloader } from "../reloaders/morph_html_reloader.js";
 import { CssReloader } from "../reloaders/css_reloader.js";
 import { StimulusReloader } from "../reloaders/stimulus_reloader.js";
+import { ReplaceHtmlReloader } from "../reloaders/replace_html_reloader.js";
 
 consumer.subscriptions.create({ channel: "Hotwire::Spark::Channel" }, {
   connected() {
@@ -33,6 +34,9 @@ consumer.subscriptions.create({ channel: "Hotwire::Spark::Channel" }, {
   },
 
   reloadHtml() {
+    const HtmlReloader = HotwireSpark.config.htmlReloadMethod == "morph"
+      ? MorphHtmlReloader
+      : ReplaceHtmlReloader
     return HtmlReloader.reload()
   },
 
