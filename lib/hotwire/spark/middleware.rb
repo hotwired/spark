@@ -7,6 +7,7 @@ class Hotwire::Spark::Middleware
     status, headers, response = @app.call(env)
 
     if html_response?(headers)
+      @request = ActionDispatch::Request.new(env)
       html = html_from(response)
       html = inject_javascript(html)
       html = inject_options(html)
@@ -38,7 +39,7 @@ class Hotwire::Spark::Middleware
     end
 
     def view_helpers
-      ActionController::Base.helpers
+      @request.controller_instance.helpers
     end
 
     def inject_options(html)

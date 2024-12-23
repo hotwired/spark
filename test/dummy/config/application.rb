@@ -25,5 +25,7 @@ module Dummy
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    config.asset_host = ->(asset, request) { "#{request.host}:#{request.port}" }
   end
 end
