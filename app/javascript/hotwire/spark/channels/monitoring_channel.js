@@ -18,15 +18,13 @@ consumer.subscriptions.create({ channel: "Hotwire::Spark::Channel" }, {
   },
 
   dispatch({ action, path }) {
-    const fileName = assetNameFromPath(path)
-
     switch(action) {
       case "reload_html":
         return this.reloadHtml()
       case "reload_css":
-        return this.reloadCss(fileName)
+        return this.reloadCss(path)
       case "reload_stimulus":
-        return this.reloadStimulus(fileName)
+        return this.reloadStimulus(path)
       default:
         throw new Error(`Unknown action: ${action}`)
     }
@@ -36,12 +34,13 @@ consumer.subscriptions.create({ channel: "Hotwire::Spark::Channel" }, {
     return HtmlReloader.reload()
   },
 
-  reloadCss(fileName) {
+  reloadCss(path) {
+    const fileName = assetNameFromPath(path)
     return CssReloader.reload(new RegExp(fileName))
   },
 
-  reloadStimulus(fileName) {
-    return StimulusReloader.reload(new RegExp(fileName))
+  reloadStimulus(path) {
+    return StimulusReloader.reload(path)
   }
 })
 

@@ -36,9 +36,13 @@ class Hotwire::Spark::FileWatcher
       changed_files.each do |file|
         @callbacks_by_path.each do |path, callbacks|
           if file.to_s.start_with?(path.to_s)
-            callbacks.each { |callback| callback.call(file) }
+            callbacks.each { |callback| callback.call(as_relative_path(file)) }
           end
         end
       end
+    end
+
+    def as_relative_path(path)
+      Pathname.new(path).relative_path_from(Rails.application.root)
     end
 end

@@ -5,6 +5,7 @@ class Hotwire::Spark::Installer
 
   def install
     configure_cable_server
+    configure_routes
     configure_middleware
     monitor_paths
   end
@@ -16,6 +17,12 @@ class Hotwire::Spark::Installer
     def configure_cable_server
       application.routes.prepend do
         mount Hotwire::Spark.cable_server => "/hotwire-spark", internal: true, anchor: true
+      end
+    end
+
+    def configure_routes
+      application.routes.prepend do
+        mount Hotwire::Spark::Engine => "/spark", as: "hotwire_spark"
       end
     end
 
@@ -31,12 +38,12 @@ class Hotwire::Spark::Installer
     def register_monitored_paths
       monitor :css_paths, action: :reload_css
       monitor :html_paths, action: :reload_html
-      monitor :stimulus_paths, action: :reload_stimulus
+      monitor :stimulus_paths, action: :reload_stimulus, pattern: /\.js$/
     end
 
-    def monitor(paths_name, action:)
+    def monitor(paths_name, action:, pattern: /./)
       file_watcher.monitor Hotwire::Spark.public_send(paths_name) do |file_path|
-        broadcast_reload_action(action, file_path)
+        broadcast_reload_action(action, file_path) if file_path.to_s =~ pattern
       end
     end
 
