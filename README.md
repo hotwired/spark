@@ -64,7 +64,7 @@ config.hotwire.spark.html_paths += %w[ lib ]
 
 | Name                  | Description                                                                                                                  |
 |-----------------------|------------------------------------------------------------------------------------------------------------------------------|
-| `html_paths`          | Paths where file changes trigger a content refresh. By default: `app/controllers`, `app/helpers`, `app/models`, `app/views`. |
+| `html_paths`          | Paths where file changes trigger a content refresh. By default: `app/components`, `app/controllers`, `app/helpers`, `app/models`, `app/views`. |
 | `html_extensions`     | The extensions to monitor for HTML content changes. By default: `rb`, `erb`.                                                 |                                                                                                                                                                                                                                                   |
 | `css_paths`           | Paths where file changes trigger a CSS refresh. By default: `app/assets/stylesheets` or `app/assets/builds` if exists.       |
 | `css_extensions`      | The extensions to monitor for CSS changes. By default: `css`.                                                                |                                                                                                                                                                                                                                                   |
