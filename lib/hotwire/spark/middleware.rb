@@ -34,12 +34,16 @@ class Hotwire::Spark::Middleware
     end
 
     def script_tag
-      script_path = view_helpers.asset_path("hotwire_spark.js")
-      view_helpers.javascript_include_tag(script_path)
+      return nil unless view_helpers
+
+      script_path = view_helpers&.asset_path("hotwire_spark.js")
+      return nil unless script_path
+
+      view_helpers&.javascript_include_tag(script_path)
     end
 
     def view_helpers
-      @request.controller_instance.helpers
+      @request&.controller_instance&.helpers
     end
 
     def inject_options(html)
@@ -55,6 +59,11 @@ class Hotwire::Spark::Middleware
     end
 
     def html_reload_method_option
-      view_helpers.tag.meta(name: "hotwire-spark:html-reload-method", content: Hotwire::Spark.html_reload_method)
+      return nil unless view_helpers
+
+      view_helpers&.tag&.meta(
+        name: "hotwire-spark:html-reload-method",
+        content: Hotwire::Spark&.html_reload_method
+      )
     end
 end
