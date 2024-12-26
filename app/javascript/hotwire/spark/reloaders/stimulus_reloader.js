@@ -66,8 +66,13 @@ export class StimulusReloader {
   }
 
   #extractControllerName(path) {
+    const stimulusPaths = (HotwireSpark.config.stimulusPaths || "").split(' ');
+    const basePath = stimulusPaths.find(base => path.startsWith(base));
+
+    if (basePath) path = path.replace(basePath, '');
+
     return path
-      .replace(/^.*\//, "")
+      .replace(/^\/+/, "")
       .replace("_controller", "")
       .replace(/\//g, "--")
       .replace(/_/g, "-")

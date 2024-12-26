@@ -47,7 +47,7 @@ class Hotwire::Spark::Middleware
     end
 
     def options
-      [ logging_option, html_reload_method_option ].compact.join("\n")
+      [ logging_option, html_reload_method_option, stimulus_paths ].compact.join("\n")
     end
 
     def logging_option
@@ -56,5 +56,9 @@ class Hotwire::Spark::Middleware
 
     def html_reload_method_option
       view_helpers.tag.meta(name: "hotwire-spark:html-reload-method", content: Hotwire::Spark.html_reload_method)
+    end
+
+    def stimulus_paths
+      view_helpers.tag.meta(name: "hotwire-spark:stimulus-paths", content: Hotwire::Spark.stimulus_paths)
     end
 end

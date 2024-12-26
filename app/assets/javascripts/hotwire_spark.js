@@ -1447,7 +1447,10 @@ var HotwireSpark = (function () {
       return this.changedControllerIdentifier;
     }
     #extractControllerName(path) {
-      return path.replace(/^.*\//, "").replace("_controller", "").replace(/\//g, "--").replace(/_/g, "-").replace(/\.js$/, "");
+      const stimulusPaths = (HotwireSpark.config.stimulusPaths || "").split(' ');
+      const basePath = stimulusPaths.find(base => path.startsWith(base));
+      if (basePath) path = path.replace(basePath, '');
+      return path.replace(/^\/+/, "").replace("_controller", "").replace(/\//g, "--").replace(/_/g, "-").replace(/\.js$/, "");
     }
     #deregisterChangedController() {
       this.#deregisterController(this.#changedControllerIdentifier);
@@ -1616,12 +1619,14 @@ var HotwireSpark = (function () {
   const HotwireSpark$1 = {
     config: {
       loggingEnabled: false,
-      htmlReloadMethod: "morph"
+      htmlReloadMethod: "morph",
+      stimulusPaths: ""
     }
   };
   const configProperties = {
     loggingEnabled: "logging",
-    htmlReloadMethod: "html-reload-method"
+    htmlReloadMethod: "html-reload-method",
+    stimulusPaths: "stimulus-paths"
   };
   document.addEventListener("DOMContentLoaded", function () {
     Object.entries(configProperties).forEach(_ref => {

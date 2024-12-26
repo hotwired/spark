@@ -4,13 +4,15 @@ import { getConfigurationProperty } from "./helpers.js";
 const HotwireSpark = {
   config: {
     loggingEnabled: false,
-    htmlReloadMethod: "morph"
+    htmlReloadMethod: "morph",
+    stimulusPaths: ""
   }
 }
 
 const configProperties = {
   loggingEnabled: "logging",
   htmlReloadMethod: "html-reload-method",
+  stimulusPaths: "stimulus-paths"
 }
 
 document.addEventListener("DOMContentLoaded", function() {
