@@ -18,17 +18,27 @@ export function cacheBustedUrl(urlString) {
   return urlWithParams(urlString, { reload: Date.now() })
 }
 
+class ResponseError extends Error {
+  constructor(message, response) {
+    super(message)
+    this.response = response
+  }
+}
+
 export async function reloadHtmlDocument() {
   let currentUrl = cacheBustedUrl(urlWithParams(window.location.href, { hotwire_spark: "true" }))
   const response = await fetch(currentUrl, { headers: { "Accept": "text/html" }})
 
-  if (!response.ok) {
-    throw new Error(`${response.status} when fetching ${currentUrl}`)
-  }
 
   const fetchedHTML = await response.text()
   const parser = new DOMParser()
-  return parser.parseFromString(fetchedHTML, "text/html")
+  const parsedResult = parser.parseFromString(fetchedHTML, "text/html")
+
+  if (response.ok) {
+    return parsedResult
+  } else {
+    throw new ResponseError(`${response.status} when fetching ${currentUrl}`, parsedResult)
+  }
 }
 
 export function getConfigurationProperty(name) {

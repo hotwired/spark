@@ -16,13 +16,21 @@ export class MorphHtmlReloader {
   async #reloadHtml() {
     log("Reload html with morph...")
 
-    const reloadedDocument = await reloadHtmlDocument()
-    this.#updateBody(reloadedDocument.body)
-    return reloadedDocument
+    const { documentElement } = await this.#reloadHtmlDocument()
+    return this.#updateDocument(documentElement)
   }
 
-  #updateBody(newBody) {
-    Idiomorph.morph(document.body, newBody)
+  #updateDocument(newDocument) {
+    Idiomorph.morph(document.documentElement, newDocument)
+    return newDocument
+  }
+
+  async #reloadHtmlDocument() {
+    try {
+      return await reloadHtmlDocument()
+    } catch ({ response }) {
+      return response
+    }
   }
 
   async #reloadStimulus() {

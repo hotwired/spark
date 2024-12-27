@@ -1,6 +1,6 @@
 require "application_system_test_case"
 
-class ReplaceHtmlReloadTest < ApplicationSystemTestCase
+class ReplaceHtmlReloadTest < HtmlReloadTest
   setup do
     Hotwire::Spark.html_reload_method = :replace
   end

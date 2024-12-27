@@ -533,6 +533,12 @@ var HotwireSpark = (function () {
       reload: Date.now()
     });
   }
+  class ResponseError extends Error {
+    constructor(message, response) {
+      super(message);
+      this.response = response;
+    }
+  }
   async function reloadHtmlDocument() {
     let currentUrl = cacheBustedUrl(urlWithParams(window.location.href, {
       hotwire_spark: "true"
@@ -542,12 +548,14 @@ var HotwireSpark = (function () {
         "Accept": "text/html"
       }
     });
-    if (!response.ok) {
-      throw new Error(`${response.status} when fetching ${currentUrl}`);
-    }
     const fetchedHTML = await response.text();
     const parser = new DOMParser();
-    return parser.parseFromString(fetchedHTML, "text/html");
+    const parsedResult = parser.parseFromString(fetchedHTML, "text/html");
+    if (response.ok) {
+      return parsedResult;
+    } else {
+      throw new ResponseError(`${response.status} when fetching ${currentUrl}`, parsedResult);
+    }
   }
   function getConfigurationProperty(name) {
     return document.querySelector(`meta[name="hotwire-spark:${name}"]`)?.content;
@@ -1490,12 +1498,23 @@ var HotwireSpark = (function () {
     }
     async #reloadHtml() {
       log("Reload html with morph...");
-      const reloadedDocument = await reloadHtmlDocument();
-      this.#updateBody(reloadedDocument.body);
-      return reloadedDocument;
+      const {
+        documentElement
+      } = await this.#reloadHtmlDocument();
+      return this.#updateDocument(documentElement);
     }
-    #updateBody(newBody) {
-      Idiomorph.morph(document.body, newBody);
+    #updateDocument(newDocument) {
+      Idiomorph.morph(document.documentElement, newDocument);
+      return newDocument;
+    }
+    async #reloadHtmlDocument() {
+      try {
+        return await reloadHtmlDocument();
+      } catch ({
+        response
+      }) {
+        return response;
+      }
     }
     async #reloadStimulus() {
       await StimulusReloader.reloadAll();
