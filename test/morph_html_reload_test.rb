@@ -1,6 +1,6 @@
 require "application_system_test_case"
 
-class MorphHtmlReloadTest < HtmlReloadTest
+class MorphHtmlReloadTest < ApplicationSystemTestCase
   setup do
     Hotwire::Spark.html_reload_method = :morph
   end
