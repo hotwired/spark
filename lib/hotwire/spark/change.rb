@@ -23,7 +23,7 @@ class Hotwire::Spark::Change
 
     def canonical_changed_path
       changed_path.to_s.tap do |changed_path|
-        monitored_paths.each { |path| changed_path.gsub!(/^#{path}/, "")}
+        monitored_paths.each { |path| changed_path.gsub!(/^#{path}/, "") }
       end
     end
 
