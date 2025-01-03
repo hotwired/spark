@@ -1,6 +1,15 @@
 var HotwireSpark = (function () {
   'use strict';
 
+  function getConfigurationProperty(name) {
+    return document.querySelector(`meta[name="hotwire-spark:${name}"]`)?.content;
+  }
+  var config = {
+    loggingEnabled: getConfigurationProperty("logging") ?? false,
+    htmlReloadMethod: getConfigurationProperty("html-reload-method"),
+    cableServerPath: getConfigurationProperty("cable-server-path")
+  };
+
   var adapters = {
     logger: typeof console !== "undefined" ? console : undefined,
     WebSocket: typeof WebSocket !== "undefined" ? WebSocket : undefined
@@ -512,7 +521,7 @@ var HotwireSpark = (function () {
     }
   }
 
-  var consumer = createConsumer("/hotwire-spark");
+  var consumer = createConsumer(config.cableServerPath);
 
   function assetNameFromPath(path) {
     return path.split("/").pop().split(".")[0];
@@ -548,9 +557,6 @@ var HotwireSpark = (function () {
     const fetchedHTML = await response.text();
     const parser = new DOMParser();
     return parser.parseFromString(fetchedHTML, "text/html");
-  }
-  function getConfigurationProperty(name) {
-    return document.querySelector(`meta[name="hotwire-spark:${name}"]`)?.content;
   }
 
   // base IIFE to define idiomorph
@@ -1387,7 +1393,7 @@ var HotwireSpark = (function () {
       })();
 
   function log() {
-    if (HotwireSpark$1.config.loggingEnabled) {
+    if (config.loggingEnabled) {
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
@@ -1630,21 +1636,8 @@ var HotwireSpark = (function () {
   });
 
   const HotwireSpark$1 = {
-    config: {
-      loggingEnabled: false,
-      htmlReloadMethod: "morph"
-    }
+    config
   };
-  const configProperties = {
-    loggingEnabled: "logging",
-    htmlReloadMethod: "html-reload-method"
-  };
-  document.addEventListener("DOMContentLoaded", function () {
-    Object.entries(configProperties).forEach(_ref => {
-      let [key, property] = _ref;
-      HotwireSpark$1.config[key] = getConfigurationProperty(property);
-    });
-  });
 
   return HotwireSpark$1;
 

@@ -16,6 +16,7 @@ module Hotwire::Spark
   mattr_accessor :logging, default: false
   mattr_accessor :html_reload_method, default: :morph
   mattr_accessor :enabled, default: Rails.env.development?
+  mattr_accessor :cable_server_path, default: "/hotwire-spark"
 
   class << self
     def install_into(application)

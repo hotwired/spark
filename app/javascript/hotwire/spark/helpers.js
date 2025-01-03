@@ -30,8 +30,3 @@ export async function reloadHtmlDocument() {
   const parser = new DOMParser()
   return parser.parseFromString(fetchedHTML, "text/html")
 }
-
-export function getConfigurationProperty(name) {
-  return document.querySelector(`meta[name="hotwire-spark:${name}"]`)?.content
-}
-

@@ -27,5 +27,6 @@ module Dummy
     # config.eager_load_paths << Rails.root.join("extras")
 
     config.asset_host = ->(asset, request) { "#{request.host}:#{request.port}" }
+    config.hotwire.spark.cable_server_path = "/test/hotwire-spark"
   end
 end

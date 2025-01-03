@@ -1,3 +1,4 @@
 import { createConsumer } from "@rails/actioncable"
+import config from "../config"
 
-export default createConsumer("/hotwire-spark")
+export default createConsumer(config.cableServerPath)

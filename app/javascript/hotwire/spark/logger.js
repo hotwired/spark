@@ -1,7 +1,7 @@
-import HotwireSpark from "./index.js"
+import config from "./config"
 
 export function log(...args) {
-  if (HotwireSpark.config.loggingEnabled) {
+  if (config.loggingEnabled) {
     console.log(`[hotwire_spark]`, ...args)
   }
 }

@@ -15,7 +15,7 @@ class Hotwire::Spark::Installer
 
     def configure_cable_server
       application.routes.prepend do
-        mount Hotwire::Spark.cable_server => "/hotwire-spark", internal: true, anchor: true
+        mount Hotwire::Spark.cable_server => Hotwire::Spark.cable_server_path, internal: true, anchor: true
       end
     end
 
