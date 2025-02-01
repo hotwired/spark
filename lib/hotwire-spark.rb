@@ -24,7 +24,7 @@ module Hotwire::Spark
     end
 
     def enabled?
-      enabled && defined?(Rails::Server)
+      enabled && (defined?(Rails::Server) || $PROGRAM_NAME =~ /puma/)
     end
 
     def cable_server
