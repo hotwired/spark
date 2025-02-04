@@ -1600,6 +1600,10 @@ var HotwireSpark = (function () {
       document.body.setAttribute("data-hotwire-spark-ready", "");
     },
     async received(message) {
+      if (!window.Turbo) {
+        log(`Turbo not detected, skipping ${message.action}`);
+        return;
+      }
       try {
         await this.dispatch(message);
       } catch (error) {
