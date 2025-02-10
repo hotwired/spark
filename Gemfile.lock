@@ -102,7 +102,7 @@ GEM
     cuprite (0.15.1)
       capybara (~> 3.0)
       ferrum (~> 0.15.0)
-    date (3.4.0)
+    date (3.4.1)
     drb (2.2.1)
     erubi (1.13.0)
     ferrum (0.15)
@@ -141,7 +141,7 @@ GEM
     matrix (0.4.2)
     mini_mime (1.1.5)
     minitest (5.25.4)
-    net-imap (0.5.2)
+    net-imap (0.5.6)
       date
       net-protocol
     net-pop (0.1.2)
