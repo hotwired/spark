@@ -6,6 +6,10 @@ export class ReplaceHtmlReloader {
   }
 
   async reload() {
+    if (!window.Turbo) {
+      console.log(`[hotwire-spark] Tried to replace the page with Turbo, but Turbo is not available on window.Turbo`);
+      return;
+    }
     await this.#reloadHtml()
   }
 
