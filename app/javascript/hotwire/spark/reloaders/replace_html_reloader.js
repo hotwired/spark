@@ -1,4 +1,4 @@
-import { log } from "../logger.js"
+import { log, LOG_TAG } from "../logger.js"
 
 export class ReplaceHtmlReloader {
   static async reload() {
@@ -6,6 +6,10 @@ export class ReplaceHtmlReloader {
   }
 
   async reload() {
+    if (!window.Turbo) {
+      console.log(LOG_TAG, "Tried to replace the page with Turbo, but Turbo is not available on window.Turbo");
+      return;
+    }
     await this.#reloadHtml()
   }
 

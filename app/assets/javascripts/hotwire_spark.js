@@ -1392,12 +1392,13 @@ var HotwireSpark = (function () {
           }
       })();
 
+  const LOG_TAG = "[hotwire_spark]";
   function log() {
     if (config.loggingEnabled) {
       for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
       }
-      console.log(`[hotwire_spark]`, ...args);
+      console.log(LOG_TAG, ...args);
     }
   }
 
@@ -1569,6 +1570,10 @@ var HotwireSpark = (function () {
       return new ReplaceHtmlReloader().reload();
     }
     async reload() {
+      if (!window.Turbo) {
+        console.log(LOG_TAG, "Tried to replace the page with Turbo, but Turbo is not available on window.Turbo");
+        return;
+      }
       await this.#reloadHtml();
     }
     async #reloadHtml() {
