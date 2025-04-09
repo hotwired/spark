@@ -12,7 +12,7 @@ class Hotwire::Spark::Middleware
       html = html_from(response)
       html = inject_options(html)
       html = inject_javascript(html)
-      headers["Content-Length"] = html.bytesize.to_s if html
+      headers.delete("Content-Length")
       response = [ html ]
     end
 
