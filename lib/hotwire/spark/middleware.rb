@@ -6,12 +6,13 @@ class Hotwire::Spark::Middleware
   def call(env)
     status, headers, response = @app.call(env)
 
-    @request = ActionDispatch::Request.new(env)
+    request = ActionDispatch::Request.new(env)
 
-    if interceptable_request? && html_response?(headers)
+    if interceptable_request?(request) && html_response?(headers)
+      view_helpers = request.controller_instance.helpers
       html = html_from(response)
-      html = inject_options(html)
-      html = inject_javascript(html)
+      html = inject_options(html, view_helpers)
+      html = inject_javascript(html, view_helpers)
       headers["Content-Length"] = html.bytesize.to_s if html
       response = [ html ]
     end
@@ -20,8 +21,8 @@ class Hotwire::Spark::Middleware
   end
 
   private
-    def interceptable_request?
-      @request.controller_instance.present?
+    def interceptable_request?(request)
+      request.controller_instance.present?
     end
 
     def html_response?(headers)
@@ -34,36 +35,36 @@ class Hotwire::Spark::Middleware
       response_body.join
     end
 
-    def inject_javascript(html)
-      html.sub("</head>", "#{script_tag}</head>")
+    def inject_javascript(html, view_helpers)
+      html.sub("</head>", "#{script_tag(view_helpers)}</head>")
     end
 
-    def script_tag
+    def script_tag(view_helpers)
       script_path = view_helpers.path_to_asset("hotwire_spark.js")
       view_helpers.javascript_include_tag(script_path, defer: "")
     end
 
-    def view_helpers
-      @request.controller_instance.helpers
+    def inject_options(html, view_helpers)
+      html.sub("</head>", "#{options(view_helpers)}</head>")
     end
 
-    def inject_options(html)
-      html.sub("</head>", "#{options}</head>")
+    def options(view_helpers)
+      [
+        logging_option(view_helpers),
+        html_reload_method_option(view_helpers),
+        cable_server_path_option(view_helpers)
+      ].compact.join("\n")
     end
 
-    def options
-      [ logging_option, html_reload_method_option, cable_server_path_option ].compact.join("\n")
-    end
-
-    def cable_server_path_option
+    def cable_server_path_option(view_helpers)
       view_helpers.tag.meta(name: "hotwire-spark:cable-server-path", content: Hotwire::Spark.cable_server_path)
     end
 
-    def logging_option
+    def logging_option(view_helpers)
       view_helpers.tag.meta(name: "hotwire-spark:logging", content: "true") if Hotwire::Spark.logging
     end
 
-    def html_reload_method_option
+    def html_reload_method_option(view_helpers)
       view_helpers.tag.meta(name: "hotwire-spark:html-reload-method", content: Hotwire::Spark.html_reload_method)
     end
 end
