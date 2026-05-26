@@ -17,6 +17,7 @@ module Hotwire::Spark
   mattr_accessor :html_reload_method, default: :morph
   mattr_accessor :enabled, default: Rails.env.development?
   mattr_accessor :cable_server_path, default: "/hotwire-spark"
+  mattr_accessor :debounce_window, default: 0.1
 
   class << self
     def install_into(application)
@@ -29,6 +30,10 @@ module Hotwire::Spark
 
     def cable_server
       @server ||= Hotwire::Spark::ActionCable::Server.new
+    end
+
+    def debouncer
+      @debouncer ||= Hotwire::Spark::Debouncer.new
     end
   end
 end
