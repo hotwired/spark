@@ -9,12 +9,18 @@ class Hotwire::Spark::Change
   end
 
   def broadcast
-    broadcast_reload_action if should_broadcast?
+    return unless should_broadcast?
+
+    Hotwire::Spark.debouncer.enqueue(dedupe_key) { broadcast_reload_action }
   end
 
   private
     def broadcast_reload_action
       Hotwire::Spark.cable_server.broadcast "hotwire_spark", reload_message
+    end
+
+    def dedupe_key
+      [ action, canonical_changed_path ]
     end
 
     def reload_message
